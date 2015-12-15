@@ -1,0 +1,516 @@
+<project name="JVx.javafx" default="start.complete"
+	     xmlns:artifact="antlib:org.apache.maven.artifact.ant"
+	     xmlns:staging="antlib:org.sonatype.nexus.ant.staging">
+
+	<!--
+	  *****************************************************************
+	  * information
+	  *****************************************************************
+	  -->
+
+	<description>JavaFX UI implementation for JVx</description>
+
+	<!--
+	  *****************************************************************
+	  * global properties
+	  *****************************************************************
+	  -->
+
+	<property name="jar.name"            value="jvxfx.jar" />
+	<property name="jar.name.retro"      value="jvxfx_r.jar" />
+	<property name="jar.name.extensions" value="jfxtensions.jar" />
+
+	<property name="debug"      value="on"/>
+    <property name="debuglevel" value="source,lines"/>
+	
+	<!--
+	  *****************************************************************
+	  * general properties
+	  *****************************************************************
+	  -->
+
+	<property name="build"       location="${basedir}/build" />
+    <property name="buildnumber" location="${build}/buildnumber/" />
+ 	<property name="temp"        location="${build}/temp" />
+	<property name="install" 	 location="${build}/install" />
+	<property name="release" 	 location="${build}/release" />
+	<property name="javadoc" 	 location="${install}/doc/api" />
+
+	<property name="src"         location="${basedir}/src" />
+	<property name="libs"        location="${basedir}/libs" />
+	<property name="javadoc"     location="${install}/doc/api" />
+	<property name="maven"       location="${basedir}/maven" />
+	<property name="license"     location="." />
+	<property name="buildnumber" location="${build}/buildnumber/" />
+
+	<property name="release.name"            value="jvxfx"/>
+	<property name="release.name.extensions" value="jfxtensions"/>
+	
+	<property name="classes" 	   location="${temp}/classes" />
+	<property name="classes.retro" location="${temp}/classes.retro" />
+
+	<!-- if already set through nightly build script, the value is not set again! -->
+	<property name="build.nightly" value="" />
+	
+	<!-- Maven snapshots and staging repository id and url -->
+	<property name="mvn.snapshotsrep.id"  value="sonatype-nexus-snapshots" />
+	<property name="mvn.snapshotsrep.url" value="https://oss.sonatype.org/content/repositories/snapshots" />
+	<property name="mvn.stagingrep.id"    value="sonatype-nexus-staging" />
+    <property name="mvn.stagingrep.url"   value="https://oss.sonatype.org/service/local/staging/deploy/maven2" />
+	
+	<!-- 
+	  ***************************************************************** 
+	  * external taskdefinitions   
+	  ***************************************************************** 
+	  -->
+
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="${build}/ant-contrib.jar" />
+	
+	<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="antlib:org.apache.maven.artifact.ant" classpath="${build}/maven/maven-ant-tasks-2.1.3.jar" />
+
+	<!-- 
+	  ***************************************************************** 
+	  * logging   
+	  ***************************************************************** 
+	  -->
+
+	<record name="${build}/build.log" />	
+	
+	<!--
+	  *****************************************************************
+	  * INTERNAL TASKS
+	  *****************************************************************
+	  -->
+
+	<target name="proxy.check">
+	  <stopwatch name="timer_proxy"/>
+	    
+	  <if>
+	    <not>
+	      <isset property="ci" />
+	    </not>
+	    <then>
+		  <condition property="proxy.enabled">
+		    <and>
+		      <socket server="10.0.0.1" port="3128"/>
+	        </and>
+	      </condition>
+	    </then>
+	  </if>
+	    
+	  <stopwatch name="timer_proxy" action="total"/>
+	</target>
+	  
+	<target name="proxy" depends="proxy.check" if="proxy.enabled">
+	  <stopwatch name="timer1"/>
+	    
+	  <property name="proxy.host" value="10.0.0.1"/>
+	  <property name="proxy.port" value="3128"/>
+	  <property name="proxy.user" value=""/>
+	  <property name="proxy.pass" value=""/>
+	      
+	  <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" proxyuser="${proxy.user}" proxypassword="${proxy.password}"/>
+	    
+	  <stopwatch name="timer1" action="total"/>
+	</target>
+	
+    <!--  
+	  * cleanup tasks 
+	  -->
+	
+	<target name="clean.start">
+      <stopwatch name="timer2"/>
+
+	  <delete dir="${temp}" />
+	  <delete dir="${install}" />
+	  <delete dir="${release}" />
+		
+	  <stopwatch name="timer2" action="total"/>
+	</target>
+	
+	<target name="clean.stop">
+      <stopwatch name="timer3"/>
+		
+	  <delete dir="${temp}" />
+		
+      <stopwatch name="timer3" action="total"/>
+	</target>
+	
+    <!-- 
+	  * compile, build tasks 
+	  -->
+	
+	<target name="compile">
+	  <stopwatch name="timer4"/>
+		
+	  <mkdir dir="${build}" />
+	  <mkdir dir="${classes}" />
+	  <mkdir dir="${classes.retro}" />
+		
+	  <javac srcdir="${src}" destdir="${classes}" debug="${debug}" debuglevel="${debuglevel}" deprecation="on" includeantruntime="false" source="1.8" encoding="UTF-8">
+	    <classpath>
+	      <fileset dir="${libs}">
+	        <include name="*.jar" />
+	      </fileset>
+	    </classpath>
+	  </javac>
+		
+	  <!-- copy resource files -->
+	  <copy todir="${classes}">
+	    <fileset dir="${src}">
+	      <include name="**/**" />
+
+	      <exclude name="**/*.java" />
+	      <exclude name="**/package.html" />
+	      <exclude name="META-INF/**" />
+	    </fileset>
+	  </copy>
+
+	  <copy todir="${classes.retro}">
+		<fileset dir="${src}">
+		  <include name="**/**" />
+
+		  <exclude name="**/*.java" />
+		  <exclude name="**/package.html" />
+		  <exclude name="META-INF/**" />
+		</fileset>
+	  </copy>
+		
+	  <stopwatch name="timer4" action="total"/>
+	</target>
+	
+	<!-- prepare JVM 1.6/1.7 compatibility -->
+	<target name="retrolambda" depends="compile">
+	  <stopwatch name="timer5"/>
+
+	  <property name="jar.retro" location="${build}/retrolambda-2.0.1.jar" />
+		
+	  <java classname="net.orfjackal.retrolambda.Main" fork="true">
+		<jvmarg value="-Dretrolambda.inputDir=${classes}"/>
+	  	<jvmarg value="-Dretrolambda.classpath="/>
+		<jvmarg value="-Dretrolambda.outputDir=${classes.retro}"/>
+		<jvmarg value="-javaagent:${jar.retro}"/>
+		<classpath>
+		  <pathelement path="${jar.retro}"/>
+		  <pathelement path="${classes}"/>
+		  <fileset dir="${libs}">
+	        <include name="*.jar" />
+		  </fileset>
+		</classpath>
+	  </java>		
+
+	  <property name="classes.dnd" location="${temp}/classes.dnd" />
+		
+	  <mkdir dir="${classes.dnd}" />
+		
+      <unjar src="${libs}/dndtabpane.jar" dest="${classes.dnd}" />	  
+		
+	  <java classname="net.orfjackal.retrolambda.Main" fork="true">
+		<jvmarg value="-Dretrolambda.inputDir=${classes.dnd}"/>
+	  	<jvmarg value="-Dretrolambda.classpath="/>
+		<jvmarg value="-javaagent:${jar.retro}"/>
+		<classpath>
+		  <pathelement path="${jar.retro}"/>
+		  <pathelement path="${classes.dnd}"/>
+		  <fileset dir="${libs}">
+	        <include name="*.jar" />
+		  </fileset>
+		</classpath>
+	  </java>		
+
+	  <!-- here - and not in jar task, because retrolambda is a compatibility task and could holpefully removed in future releases -->
+      <mkdir dir="${install}" />
+		
+	  <jar destfile="${install}/dndtabpane_r.jar" basedir="${classes.dnd}" manifest="${classes.dnd}/META-INF/MANIFEST.MF" />
+		
+	  <stopwatch name="timer5" action="total"/>
+	</target>
+	
+	<target name="jar" depends="retrolambda">
+	  <stopwatch name="timer6"/>
+		
+      <!-- define late because of the classpath -->
+	  <taskdef name="buildnr" classname="com.sibvisions.addons.ant.AntBuildNumber" classpath="${buildnumber}/addons.jar;${classes}" />
+	  <buildnr buildfile="${buildnumber}/buildnr.properties" class="com.sibvisions.rad.ui.javafx.IPackageSetup" versionfield="VERSION" namefield="NAME"/> 
+		
+      <mkdir dir="${install}" />
+		
+	  <jar jarfile="${install}/${jar.name}" basedir="${classes}">
+		<manifest>
+	      <attribute name="Implementation-Title" value="${build.versionstring}${build.nightly}"/>
+	      <attribute name="Implementation-Version" value="b${build.number} ${build.date}${build.nightly}"/> 
+	      <attribute name="Implementation-Vendor" value="SIB Visions GmbH"/>
+	    </manifest>
+      </jar>
+		
+	  <jar jarfile="${install}/${jar.name.retro}" basedir="${classes.retro}">
+	    <manifest>
+		  <attribute name="Implementation-Title" value="${build.versionstring}${build.nightly}"/>
+		  <attribute name="Implementation-Version" value="b${build.number} ${build.date}${build.nightly}"/> 
+		  <attribute name="Implementation-Vendor" value="SIB Visions GmbH"/>
+	    </manifest>
+	  </jar>
+		
+	  <jar jarfile="${install}/${jar.name.extensions}">
+		<manifest>
+	      <attribute name="Implementation-Title" value="JVx JavaFX extensions${build.nightly}"/>
+	      <attribute name="Implementation-Version" value="b${build.number} ${build.date}${build.nightly}"/> 
+	      <attribute name="Implementation-Vendor" value="SIB Visions GmbH"/>
+	    </manifest>
+	  	
+	  	<!-- Exclude all classes in the impl package, as well as all databound
+	  	     controls. That is to make sure that there are no dependencies
+	  	     against JVx itself, so that the extensions can be used on their own
+	  	     without requiring additional dependencies. -->
+	  	<fileset dir="${classes}">
+	  		<exclude name="**/com/sibvisions/rad/ui/javafx/ext/celleditor/**" />
+	  		<exclude name="**/com/sibvisions/rad/ui/javafx/ext/chart/**" />
+	  		<exclude name="**/com/sibvisions/rad/ui/javafx/ext/control/**" />
+	  		<exclude name="**/com/sibvisions/rad/ui/javafx/impl/**" />
+	  	</fileset>
+	  	
+	  	<!-- Because of the FXNumberField we need the NumberUtil class from
+	  	     JVx. Luckily for us the NumberUtil does not have any further
+	  	     dependencies, so we can simply copy it. -->
+	  	<zipfileset src="${libs}/jvx.jar" includes="com/sibvisions/util/type/NumberUtil.class"/>
+	  	<zipfileset src="${libs}/jvx.jar" includes="com/sibvisions/util/type/LocaleUtil.class"/>
+	  	<zipfileset src="${libs}/jvx.jar" includes="com/sibvisions/util/Internalize.class"/>
+	  </jar>
+		
+	  <stopwatch name="timer6" action="total"/>
+	</target>
+	
+	<target name="opensource" depends="jar, javadoc">
+		<stopwatch name="timer7"/>
+		
+		<mkdir dir="${release}"/>
+		
+		<copy file="${install}/${jar.name}" todir="${release}" />
+		<copy file="${install}/${jar.name.extensions}" todir="${release}" />
+		
+		<zip destfile="${release}/${release.name}-${build.version}.zip">
+			<zipfileset dir="${release}">
+				<include name="${jar.name}" />
+			</zipfileset>
+			<zipfileset dir="${license}">
+				<include name="LICENSE.txt" />
+				<include name="NOTICE.txt" />
+			</zipfileset>
+		</zip>
+		<zip destfile="${release}/${release.name.extensions}-${build.version}.zip">
+			<zipfileset dir="${release}">
+				<include name="${jar.name.extensions}" />
+			</zipfileset>
+			<zipfileset dir="${license}">
+				<include name="LICENSE" />
+				<include name="NOTICE.txt" />
+			</zipfileset>
+		</zip>
+		
+		<zip destfile="${release}/${release.name}-${build.version}_javadoc.zip">
+			<zipfileset dir="${javadoc}" prefix="api" />
+			<zipfileset dir="${license}">
+				<include name="LICENSE.txt" />
+			</zipfileset>
+		</zip>
+		<zip destfile="${release}/${release.name.extensions}-${build.version}_javadoc.zip">
+			<zipfileset dir="${javadoc}" prefix="api" />
+			<zipfileset dir="${license}">
+				<include name="LICENSE" />
+			</zipfileset>
+		</zip>
+		
+		<zip destfile="${release}/${release.name}-${build.version}_src.zip">
+			<zipfileset dir="${src}" prefix="src" />
+			<zipfileset dir="${license}">
+				<include name="LICENSE.txt" />
+			</zipfileset>
+		</zip>
+		<zip destfile="${release}/${release.name.extensions}-${build.version}_src.zip">
+			<zipfileset dir="${src}" prefix="src">
+				<exclude name="**/com/sibvisions/rad/ui/javafx/ext/celleditor/**" />
+				<exclude name="**/com/sibvisions/rad/ui/javafx/ext/chart/**" />
+				<exclude name="**/com/sibvisions/rad/ui/javafx/ext/control/**" />
+				<exclude name="**/com/sibvisions/rad/ui/javafx/impl/**" />
+			</zipfileset>
+			<zipfileset dir="${license}">
+				<include name="LICENSE.txt" />
+			</zipfileset>
+		</zip>
+
+	   <stopwatch name="timer7" action="total"/>
+    </target>
+	
+	<target name="maven" depends="opensource">
+		<property name="maven.version.postfix" value="" />
+		<property name="mvn.groupId" value="com.sibvisions" />
+		
+		<condition property="gpgexecutable" value="C:\Program Files (x86)\GNU\GnuPG\pub\gpg.exe" else="gpg">
+			<and>
+				<os family="Windows" />
+			</and>
+		</condition>
+		
+		<!-- define late because of the classpath -->
+		<taskdef name="buildnr" classname="com.sibvisions.addons.ant.AntBuildNumber" classpath="${buildnumber}/addons.jar;${classes}" />
+		<buildnr buildfile="${buildnumber}/buildnr.properties" loadOnly="true"/>
+		
+		<propertyregex property="versionnumber" input="${build.version}" regexp=" " replace="_" global="true" defaultValue="${build.version}" />
+		
+		<property name="mvn.jvxfx.jar" value="${release}/maven/${release.name}-${versionnumber}${maven.version.postfix}.jar" />
+		<property name="mvn.jvxfx.sources.jar" value="${release}/maven/${release.name}-${versionnumber}${maven.version.postfix}-sources.jar" />
+		<property name="mvn.jvxfx.javadoc.jar" value="${release}/maven/${release.name}-${versionnumber}${maven.version.postfix}-javadoc.jar" />
+		
+		<property name="mvn.jfxtensions.jar" value="${release}/maven/${release.name.extensions}-${versionnumber}${maven.version.postfix}.jar" />
+		<property name="mvn.jfxtensions.sources.jar" value="${release}/maven/${release.name.extensions}-${versionnumber}${maven.version.postfix}-sources.jar" />
+		<property name="mvn.jfxtensions.javadoc.jar" value="${release}/maven/${release.name.extensions}-${versionnumber}${maven.version.postfix}-javadoc.jar" />
+		
+		<property name="mvn.id" value="${mvn.stagingrep.id}" />
+		<property name="mvn.url" value="${mvn.stagingrep.url}" />
+		
+		<mkdir dir="${release}/maven" />
+		
+		<zip destfile="${mvn.jvxfx.jar}">
+			<zipfileset src="${release}/${jar.name}"/>
+		</zip>
+		<zip destfile="${mvn.jfxtensions.jar}">
+			<zipfileset src="${release}/${jar.name.extensions}"/>
+		</zip>
+		
+		<zip destfile="${mvn.jvxfx.sources.jar}">
+			<zipfileset dir="${src}/" includes="**" excludes="**/package.html" prefix=""/>
+		</zip>
+		<zip destfile="${mvn.jfxtensions.sources.jar}">
+			<zipfileset dir="${src}/" includes="**" excludes="**/package.html" prefix="">
+				<exclude name="**/com/sibvisions/rad/ui/javafx/ext/celleditor/**" />
+				<exclude name="**/com/sibvisions/rad/ui/javafx/ext/chart/**" />
+				<exclude name="**/com/sibvisions/rad/ui/javafx/ext/control/**" />
+				<exclude name="**/com/sibvisions/rad/ui/javafx/impl/**" />
+			</zipfileset>
+		</zip>
+		
+		<unzip src="${release}/${release.name}-${build.version}_javadoc.zip" dest="${release}/maven/javadoc"/>
+		
+		<zip destfile="${mvn.jvxfx.javadoc.jar}">
+			<zipfileset dir="${release}/maven/javadoc/api" />
+		</zip>
+		<zip destfile="${mvn.jfxtensions.javadoc.jar}">
+			<zipfileset dir="${release}/maven/javadoc/api" />
+		</zip>
+		
+		<property name="maven.tmp" location="${temp}/maven" />
+		
+		<delete dir="${release}/maven/javadoc" />
+		<delete dir="${maven.tmp}" />
+		
+		<copy todir="${maven.tmp}">
+			<fileset dir="${maven}"/>
+		</copy>
+		
+		<replace dir="${maven.tmp}" token="&lt;version&gt;0.9&lt;/version&gt;" value="&lt;version&gt;${versionnumber}${maven.version.postfix}&lt;/version&gt;">
+			<include name="**/pom.xml" />
+		</replace>
+		
+	    <!-- 
+	      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	      ~ JVx JavaFX UI 
+	      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	    -->
+		
+		<artifact:mvn>
+			<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.4:sign-and-deploy-file" />
+			<arg value="-Durl=${mvn.url}" />
+			<arg value="-DrepositoryId=${mvn.id}" />
+			<arg value="-DpomFile=${maven.tmp}/jvxfx/pom.xml" />
+			<arg value="-Dfile=${mvn.jvxfx.jar}" />
+			<arg value="-Dfiles=${mvn.jvxfx.sources.jar},${mvn.jvxfx.javadoc.jar}" />
+			<arg value="-Dclassifiers=sources,javadoc" />
+			<arg value="-Dtypes=jar,jar" />
+			<arg value="-Pgpg" />
+			<arg value="-Dgpg.executable=${gpgexecutable}" />
+		</artifact:mvn>
+		
+	    <!-- 
+	      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	      ~ JVx JavaFX extensions 
+	      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	    -->
+		
+		<artifact:mvn>
+			<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.4:sign-and-deploy-file" />
+			<arg value="-Durl=${mvn.url}" />
+			<arg value="-DrepositoryId=${mvn.id}" />
+			<arg value="-DpomFile=${maven.tmp}/jfxtensions/pom.xml" />
+			<arg value="-Dfile=${mvn.jfxtensions.jar}" />
+			<arg value="-Dfiles=${mvn.jfxtensions.sources.jar},${mvn.jfxtensions.javadoc.jar}" />
+			<arg value="-Dclassifiers=sources,javadoc" />
+			<arg value="-Dtypes=jar,jar" />
+			<arg value="-Pgpg" />
+			<arg value="-Dgpg.executable=${gpgexecutable}" />
+		</artifact:mvn>
+	</target>
+	
+    <!-- 
+	  * quality tasks 
+	  -->
+
+	<target name="javadoc" depends="proxy">
+      <stopwatch name="timer7"/>
+    
+      <delete dir="${javadoc}" />
+
+      <!-- define late because of the classpath -->
+      <taskdef name="buildnr" classname="com.sibvisions.addons.ant.AntBuildNumber" classpath="${buildnumber}/addons.jar" />
+      <buildnr buildfile="${buildnumber}/buildnr.properties" loadOnly="true"/> 
+
+      <javadoc packagenames="*"
+       		   defaultexcludes="yes"
+               destdir="${javadoc}"
+               author="false"
+               version="false"
+               use="true"
+               windowtitle="${build.name} (ver. ${build.version})"
+               source="1.8"
+               encoding="UTF-8">
+        <arg value="-J-Dhttp.proxyHost=${proxy.host}"/>
+        <arg value="-J-Dhttp.proxyPort=${proxy.port}"/>
+        <arg value="-J-Dhttp.proxyUser=${proxy.user}"/>
+        <arg value="-J-Dhttp.proxyPassword=${proxy.password}"/>
+        <classpath>
+          <fileset dir="${libs}">
+            <include name="*.jar" />
+          </fileset>
+        </classpath>
+        <sourcepath>
+          <pathelement location="${src}" />
+        </sourcepath>
+        <doctitle>
+          <![CDATA[<h1>${build.name} (ver. ${build.version})</h1>]]>
+        </doctitle>
+        <bottom><![CDATA[<i>Copyright &#169; 2015 SIB Visions GmbH. All Rights Reserved.</i>]]></bottom>
+   	    <link href="http://docs.oracle.com/javase/8/docs/api/"/>
+      </javadoc>    
+
+      <stopwatch name="timer7" action="total"/>
+    </target>
+	
+	<!--
+	  *****************************************************************
+	  * PUBLIC START TASKS
+	  *****************************************************************
+	  -->
+	
+	<target name="start.complete" depends="clean.start, opensource, clean.stop" description="Creates the release jar" />
+	<target name="start.maven" depends="clean.start, maven, clean.stop" description="Creates release library for Maven" />
+	
+	<target name="start.updatelibs" description="Updates all needed libraries">
+	  <property name="install.jvx" location="../../../jvx/trunk/java/build/release" />
+	    
+	  <copy todir="${libs}">
+	    <fileset dir="${install.jvx}">
+	      <include name="jvx.jar" />
+	    </fileset>
+	  </copy>
+	</target>	
+	
+</project>

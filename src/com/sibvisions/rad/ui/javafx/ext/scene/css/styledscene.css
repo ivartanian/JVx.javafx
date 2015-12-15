@@ -1,0 +1,174 @@
+/*
+  Copyright 2015 SIB Visions GmbH
+  
+  Licensed under the Apache License, Version 2.0 (the "License"); you may not
+  use this file except in compliance with the License. You may obtain a copy of
+  the License at
+  
+  http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+  License for the specific language governing permissions and limitations under
+  the License.
+*/
+
+/*
+ PANES, AREAS
+*/
+
+.styledscene-root
+{
+	-fx-background-color:transparent;
+}
+
+.styledscene-shadow
+{
+    -fx-fill: black;
+    -fx-stroke-width: 0;
+    -fx-arc-width:20px;
+    -fx-arc-height:20px;
+}
+
+/*------------------------------------------------------------------------------------
+  BACKGROUND
+  ------------------------------------------------------------------------------------*/
+
+.styledscene-background
+{
+    -fx-fill: linear-gradient(from 0% 0% to 100% 100%, rgba(220, 220, 220, 0.8) 0%, rgba(60, 60, 60, 0.6) 100%);    
+    -fx-stroke-width: 0;
+    -fx-arc-width:20px;
+    -fx-arc-height:20px;
+}
+
+.styledscene-root:inactive .styledscene-background
+{
+	-fx-fill: linear-gradient(from 0% 0% to 100% 100%, rgba(220, 220, 220, 0.8) 0%, rgba(160, 160, 160, 0.6) 100%);
+}
+
+.styledscene-root:maximized .styledscene-background
+{
+    -fx-arc-width:0px;
+    -fx-arc-height:0px;
+	-fx-fill: rgba(60, 60, 60, 0.9);
+}
+
+.styledscene-root:inactive:maximized .styledscene-background
+{
+	-fx-fill: rgba(220, 220, 220, 0.8);
+}
+
+/*------------------------------------------------------------------------------------
+  BORDER
+  ------------------------------------------------------------------------------------*/
+
+.styledscene-border,
+.styledscene-root:maximized:inactive .styledscene-border
+{
+    -fx-fill: linear-gradient(from 0% 0% to 100% 100%, rgba(60, 60, 60, 0.6) 100%, rgba(220, 220, 220, 0.8) 0%);    
+}
+
+.styledscene-root:maximized .styledscene-border
+{
+	-fx-fill: rgba(220, 220, 220, 1.0);
+}
+
+/*------------------------------------------------------------------------------------
+  HEADER
+  ------------------------------------------------------------------------------------*/
+
+.styledscene-header
+{
+	-fx-background-color: transparent;
+}
+
+.styledscene-header-title .titletext
+{
+	-fx-font-size: 16px;
+	-fx-padding: 0 0 -2px 0;
+}
+
+/* 
+  TITLE
+  --------------------------*/
+
+.styledscene-root:maximized .styledscene-header-title .titletext
+{
+	-fx-text-fill: white;
+}
+
+.styledscene-root:inactive .styledscene-header-title .titletext
+{
+	-fx-text-fill: rgb(120, 120, 120);
+}
+
+/* 
+  BUTTONS
+  --------------------------*/
+
+.styledscene-header-buttons
+{
+}
+
+.styledscene-header-button
+{
+    -fx-background-radius: 0;
+    -fx-background-color: null;
+    -fx-background-repeat: no-repeat;
+    -fx-border-style: null;
+}
+
+.styledscene-header-zoom-in {
+	-fx-graphic: url("./zoom_in.png");
+}
+
+.styledscene-header-zoom-out {
+	-fx-graphic: url("./zoom_out.png");
+}
+
+.styledscene-header-zoom-reset {
+	-fx-graphic: url("./zoom_reset.png");
+}
+
+.styledscene-header-close
+{
+	-fx-graphic: url("./close.png");
+}
+
+.styledscene-header-maximize
+{
+	-fx-graphic: url("./max.png");
+}
+
+.styledscene-root:maximized .styledscene-header-maximize
+{
+	-fx-graphic: url("./max_restore.png");
+}
+
+.styledscene-header-iconify
+{
+	-fx-graphic: url("./iconify.png");
+}
+
+.styledscene-header-fullscreenspacer,
+.styledscene-header-zoomspacer
+{
+	-fx-pref-width: 15px;
+}
+
+
+.styledscene-header-fullscreen
+{
+	-fx-graphic: url("./fullscreen.png");
+}
+
+/*------------------------------------------------------------------------------------
+  CONTENT
+  ------------------------------------------------------------------------------------*/
+
+.styledscene-content
+{
+	-fx-background-color: transparent;
+}

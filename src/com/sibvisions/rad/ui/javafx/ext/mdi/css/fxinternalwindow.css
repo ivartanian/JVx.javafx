@@ -1,0 +1,147 @@
+/*
+ * Copyright 2015 SIB Visions GmbH
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+.internal-window {
+	-fx-skin: "com.sibvisions.rad.ui.javafx.ext.mdi.skin.FXInternalWindowSkin";
+	
+	-internal-window-color: -fx-outer-border;
+	-internal-window-focus-color: #6b859c; /* #0379a9; /* #026b96; /* #038cc4; #6b859c; -fx-focus-color; */
+	
+	-fx-background-color: -fx-body-color;
+	-fx-background-radius: 7.0px;
+	-fx-border-color: -internal-window-color;
+	-fx-border-radius: 5.0px;
+	-fx-border-width: 2.0px;
+	-fx-effect: dropshadow(gaussian, -internal-window-color, 6.0, 0.05, 0, 0);
+	-fx-padding: 2.0px;
+}
+
+.internal-window:active {
+	-fx-border-color: -internal-window-focus-color;
+	-fx-effect: dropshadow(gaussian, -internal-window-focus-color, 12.0, 0.4, 0, 0);
+}
+
+.internal-window:borderless {
+	-fx-background-radius: 0;
+	-fx-border-radius: 0;
+	-fx-border-width: 0;
+	-fx-effect: null;
+	-fx-padding: 0;
+}
+
+.internal-window:maximized {
+	-fx-padding: 0;
+}
+
+.internal-window:minimized {
+	
+}
+
+.internal-window .content {
+	
+}
+
+.internal-window .titlebar {
+	-fx-padding: 1.0px 2.0px 3.0px 2.0px;
+}
+
+.internal-window:active .titlebar {
+	-fx-background-radius: 4.0px 4.0px 0 0;
+	-fx-background-color: linear-gradient(from 0% 0% to 100.0% 100.0%, rgba(200.0, 200.0, 200.0, 0.8) 0.0%, rgba(160.0, 160.0, 160.0, 0.6) 100.0%);
+}
+
+.internal-window:maximized .titlebar {
+	-fx-background-radius: 0;
+}
+
+.internal-window:minimized .titlebar {
+	-fx-background-radius: 4.0px 4.0px 4.0px 4.0px;
+}
+
+.internal-window .titlebar .titlebar-controls {
+	-fx-spacing: 2px;	
+}
+
+.internal-window .titlebar .titlebar-icon {
+	-fx-max-height: 16.0px;
+	-fx-max-width: 16.0px;
+}
+
+.internal-window .titlebar .titlebar-name {
+	-fx-font-size: 14.0px;
+	-fx-text-fill: rgb(120.0, 120.0, 120.0);
+}
+
+.internal-window:active .titlebar .titlebar-name {
+	-fx-text-fill: black;
+}
+
+/* If you want to add images to the control buttons instead of the Unicode
+ * characters, then simply set:
+ *
+ *     -fx-content-display: graphic-only;
+ *     -fx-graphic: <uri>;
+ */
+
+.internal-window .titlebar .titlebar-control {
+	-fx-font-size: 10.0px;
+	-fx-padding: 2.0px 4.0px 2.0px 4.0px;
+	
+	-fx-content-display: graphic-only;
+}
+
+.internal-window .titlebar .titlebar-control-close {
+	-fx-graphic: url("./close.png");
+}
+
+.internal-window .titlebar .titlebar-control-close:hover {
+	-fx-color: #ff7a68;
+}
+
+.internal-window .titlebar .titlebar-control-maximize:hover,
+.internal-window .titlebar .titlebar-control-minimize:hover {
+	-fx-color: white;
+	-fx-opacity: 0.8;
+}
+
+.internal-window .titlebar .titlebar-control-maximize {
+	-fx-graphic: url("./max.png");
+}
+
+.internal-window .titlebar .titlebar-control-minimize {
+	-fx-graphic: url("./iconify.png");
+}
+
+.internal-window .titlebar .titlebar-control-zoom-in {
+	-fx-graphic: url("./zoom_in.png");
+}
+
+.internal-window .titlebar .titlebar-control-zoom-out {
+	-fx-graphic: url("./zoom_out.png");
+}
+
+.internal-window .titlebar .titlebar-control-zoom-reset {
+	-fx-graphic: url("./zoom_reset.png");
+}
+
+.internal-window:maximized .titlebar .titlebar-control-maximize {
+	-fx-graphic: url("./max_restore.png");
+}
+
+.internal-window:minimized .titlebar .titlebar-control-minimize {
+	-fx-graphic: url("./max_restore.png");
+}
+

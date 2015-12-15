@@ -1,0 +1,57 @@
+/*
+ * Copyright 2015 SIB Visions GmbH
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+.datetime-picker {
+	-fx-padding: 0.25em;
+}
+
+.legend-label .text {
+	-fx-opacity: 0.3;
+	-fx-font-size: 90%;
+}
+
+.selector-pane {
+	-fx-hgap: 0.25em;
+	-fx-vgap: 0em;
+}
+
+.main-pane {
+	-fx-hgap: 0em;
+	-fx-vgap: 0.25em;
+}
+
+.monthview {
+	-fx-border-color: -fx-box-border;
+	-fx-border-style: solid;
+	-fx-border-width: 1px 0px 0px 0px;
+}
+
+.time-picker {
+	
+}
+
+.monthview {
+	
+}
+
+.month-selector {
+	
+}
+
+.year-selector {
+	-fx-min-width: 6em;
+	-fx-pref-width: 6em;
+}
